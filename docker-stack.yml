@@ -1,0 +1,82 @@
+# Swarm deployment: docker stack deploy -c docker-stack.yml swarm
+services:
+  web:
+    image: kaj1/swarm-app:1.0.0
+    command: ["node", "web.js"]
+    environment: { API_URL: "http://api:4000" }
+    ports:
+      - "8080:3000"               # routing mesh: any node answers, requests are load balanced
+    networks: [frontend]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first         # start the new task before stopping the old one
+        failure_action: rollback
+        monitor: 15s
+      rollback_config: { parallelism: 1, order: start-first }
+      restart_policy: { condition: on-failure, delay: 3s }
+      resources:
+        limits: { cpus: "0.25", memory: 96M }
+        reservations: { cpus: "0.05", memory: 32M }
+
+  api:
+    image: kaj1/swarm-app:1.0.0
+    command: ["node", "api.js"]
+    environment: { DB_HOST: db, DB_PASSWORD_FILE: /run/secrets/db_password }
+    secrets: [db_password]
+    networks: [frontend, backend]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      replicas: 2
+      update_config: { parallelism: 1, delay: 10s, order: start-first, failure_action: rollback }
+      restart_policy: { condition: on-failure, delay: 3s }
+      resources:
+        limits: { cpus: "0.25", memory: 96M }
+        reservations: { cpus: "0.05", memory: 32M }
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_DB: appdb
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets: [db_password]
+    volumes: [dbdata:/var/lib/postgresql/data]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      replicas: 1
+      placement: { constraints: ["node.role == manager"] }
+      restart_policy: { condition: on-failure, delay: 3s }
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+
+networks:
+  frontend: { driver: overlay }
+  backend:
+    driver: overlay
+    internal: true                 # no route to the outside world
+    driver_opts: { encrypted: "true" }
+
+secrets:
+  db_password: { external: true }
+
+volumes:
+  dbdata:

@@ -1,0 +1,4 @@
+NAME             DRIVER    SCOPE
+swarm_backend    overlay   swarm
+swarm_frontend   overlay   swarm
+internal=true encrypted=true

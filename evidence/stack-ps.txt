@@ -1,0 +1,18 @@
+NAME              IMAGE                        CURRENT STATE
+swarm_api.1       kaj1/swarm-app:1.0.0         Running 5 minutes ago
+ \_ swarm_api.1   kaj1/swarm-app:1.0.0         Shutdown 4 minutes ago
+swarm_api.2       kaj1/swarm-app:1.0.0         Running 4 minutes ago
+ \_ swarm_api.2   kaj1/swarm-app:1.0.0         Shutdown 4 minutes ago
+swarm_db.1        postgres:16-alpine           Running 10 minutes ago
+ \_ swarm_db.1    postgres:16-alpine           Failed 10 minutes ago
+swarm_web.1       kaj1/swarm-app:1.0.0         Running 5 minutes ago
+ \_ swarm_web.1   kaj1/swarm-app:1.1.0         Shutdown 4 minutes ago
+ \_ swarm_web.1   kaj1/swarm-app:1.0.0         Shutdown 11 minutes ago
+swarm_web.2       kaj1/swarm-app:1.0.0         Running 4 minutes ago
+ \_ swarm_web.2   kaj1/swarm-app:1.1.0         Shutdown 4 minutes ago
+ \_ swarm_web.2   kaj1/swarm-app:1.0.0         Shutdown 11 minutes ago
+swarm_web.3       kaj1/swarm-app:1.0.0         Running 4 minutes ago
+ \_ swarm_web.3   kaj1/swarm-app:1.1.0         Shutdown 4 minutes ago
+ \_ swarm_web.3   kaj1/swarm-app:no-such-tag   Shutdown 10 minutes ago
+ \_ swarm_web.3   kaj1/swarm-app:no-such-tag   Rejected 10 minutes ago
+ \_ swarm_web.3   kaj1/swarm-app:1.1.0         Failed 10 minutes ago

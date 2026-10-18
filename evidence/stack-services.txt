@@ -1,0 +1,4 @@
+ID             NAME        MODE         REPLICAS   IMAGE                  PORTS
+rahc90t5vemu   swarm_api   replicated   2/2        kaj1/swarm-app:1.0.0   
+w02f03tpw5o6   swarm_db    replicated   1/1        postgres:16-alpine     
+elayhr7y5rv6   swarm_web   replicated   3/3        kaj1/swarm-app:1.0.0   *:8080->3000/tcp

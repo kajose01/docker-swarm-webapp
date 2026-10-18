@@ -1,0 +1,32 @@
+# Local / development run with Docker Compose (the Swarm version is docker-stack.yml)
+services:
+  web:
+    build: { context: ., args: { APP_VERSION: "1.0.0" } }
+    image: kaj1/swarm-app:1.0.0
+    command: ["node", "web.js"]
+    environment: { API_URL: "http://api:4000" }
+    ports: ["8088:3000"]
+    depends_on: [api]
+  api:
+    image: kaj1/swarm-app:1.0.0
+    command: ["node", "api.js"]
+    environment: { DB_HOST: db, DB_PASSWORD_FILE: /run/secrets/db_password }
+    secrets: [db_password]
+    depends_on: { db: { condition: service_healthy } }
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_DB: appdb
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets: [db_password]
+    volumes: [dbdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+secrets:
+  db_password: { file: ./secrets/db_password.txt }
+volumes:
+  dbdata:
